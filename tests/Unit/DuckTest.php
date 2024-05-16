@@ -78,4 +78,33 @@ class DuckTest extends TestCase
 
         $this->assertDatabaseHas('ducks', ['name' => 'Donald']);
     }
+
+    public function test_armor_base_value(): void
+    {
+        $sut = new Duck([
+            'name' => 'Donald',
+            'speed' => 10,
+            'armor' => 20,
+            'evasiveness' => 30,
+            'health' => 40,
+        ]);
+        $this->assertEquals(20, $sut->armor);
+    }
+
+    public function test_armor_with_equipment(): void
+    {
+        $sut = new Duck([
+            'name' => 'Donald',
+            'speed' => 10,
+            'armor' => 20,
+            'evasiveness' => 30,
+            'health' => 40,
+            'equipment' => [
+                ['type' => 'armor', 'value' => 5],
+                ['type' => 'armor', 'value' => 7],
+                ['type' => 'speed', 'value' => 5], // not armor
+            ],
+        ]);
+        $this->assertEquals(32, $sut->armor);
+    }
 }
