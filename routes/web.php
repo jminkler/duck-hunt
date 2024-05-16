@@ -13,6 +13,19 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+use App\Models\Duck;
+
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::get('/ducks', function () {
+
+    $ducks = Duck::where('health', '>', 80)
+        ->take(10)
+        ->get()->all();
+
+    return response()->json(
+        $ducks
+    );
 });

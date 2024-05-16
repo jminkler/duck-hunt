@@ -1,7 +1,7 @@
 services:
     laravel.test:
         build:
-            context: ./docker/8.3
+            context: ./docker/8.2
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
@@ -38,6 +38,15 @@ services:
                 - ping
             retries: 3
             timeout: 5s
+
+    mongodb:
+        image: mongo
+        container_name: mongodb
+        ports:
+            - '27017:27017'
+        networks:
+            - sail
+
 networks:
     sail:
         driver: bridge
