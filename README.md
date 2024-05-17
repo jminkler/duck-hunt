@@ -13,6 +13,7 @@ Duck Hunt is the story of the Ducks behind the video game Duck Hunt, if they wer
   - ```sail artisan app:shoot-some-ducks {count}``` Shoot some ducks with random weapons, uses a Factory to generate a random shooting Strategy
   - ```sail artisan app:triage-ducks``` We have ```app:heal-all``` but that's no fun, we need to triage all these ducks and send them to the correct medical professional
   - ```sail artisan app:heal-all``` Heal all the ducks (reset)
+  - ```sail artisan app:more-speed``` Update all ducks to have more speed
 - Shooting Ducks accounts for any armor equipment the duck may have 
   - Armor value reduced from incoming damage
   - ```/ducks``` first 10 ducks with > 80 health - json

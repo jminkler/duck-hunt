@@ -33,6 +33,8 @@ class Duck extends Model
         });
     }
 
+    // Really wanted to pull the scopes out of here but was not working with mongodb Builders and Eloquent
+
     public function scopeInjured($query)
     {
         return $query->where('health', '<', self::INJURY_THRESHOLD);
@@ -48,23 +50,29 @@ class Duck extends Model
         return $query->where('speed', '>', $speed);
     }
 
+    /**
+     * Filter ducks by total speed (speed + equipment speed reduced) being above a certain value
+     */
     public function scopeWithTotalSpeedAbove($query, $speed)
     {
         return $query->whereRaw([
             '$expr' => [
+                // $speed + sum of equipment speed > $speed
                 '$gt' => [
                     [
                         '$add' => [
                             '$speed',
                             [
+                                // reduce equipment array to sum of speed equipment
                                 '$reduce' => [
                                     'input' => '$equipment',
                                     'initialValue' => 0,
                                     'in' => [
+                                        // if equipment is speed, add value to total, else carry value
                                         '$cond' => [
                                             ['$eq' => ['$$this.type', 'speed']],
                                             ['$add' => ['$$this.value', '$$value']],
-                                            '$$value'
+                                            '$$value' // carry value
                                         ]
                                     ]
                                 ]
@@ -147,7 +155,5 @@ class Duck extends Model
 
         return $damageTaken;
     }
-
-
 
 }
