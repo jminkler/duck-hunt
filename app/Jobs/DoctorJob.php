@@ -32,8 +32,8 @@ class DoctorJob implements ShouldQueue
             Log::info('Duck healed by Doctor', ['duck_id' => $duck->id]);
 
             if ($duck->isInjured()) {
-                Log::info('Duck still injured', ['duck_id' => $duck->id]);
-                $this->release(10); // Come back later to check on the duck
+                TriageDuck::dispatch($duck->id)
+                    ->delay(now()->addSeconds(10));
             }
 
         } catch (\Exception $e) {

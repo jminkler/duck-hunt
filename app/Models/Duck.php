@@ -18,6 +18,7 @@ class Duck extends Model
     protected $connection = 'mongodb';
     protected $collection = 'ducks';
     protected $fillable = ['name', 'speed', 'armor', 'evasiveness', 'health', 'equipment', 'injured', 'seriouslyInjured'];
+    protected $hidden = ['_id', 'created_at', 'updated_at', 'evasiveness', 'armor'];
 
     protected static function boot()
     {
@@ -35,6 +36,55 @@ class Duck extends Model
     public function scopeInjured($query)
     {
         return $query->where('health', '<', self::INJURY_THRESHOLD);
+    }
+
+    public function scopeWithHealthAt($query, float $health)
+    {
+        return $query->where('health', '>=', $health);
+    }
+
+    public function scopeWithSpeedAbove($query, float $speed)
+    {
+        return $query->where('speed', '>', $speed);
+    }
+
+    public function scopeWithTotalSpeedAbove($query, $speed)
+    {
+        return $query->whereRaw([
+            '$expr' => [
+                '$gt' => [
+                    [
+                        '$add' => [
+                            '$speed',
+                            [
+                                '$reduce' => [
+                                    'input' => '$equipment',
+                                    'initialValue' => 0,
+                                    'in' => [
+                                        '$cond' => [
+                                            ['$eq' => ['$$this.type', 'speed']],
+                                            ['$add' => ['$$this.value', '$$value']],
+                                            '$$value'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    $speed
+                ]
+            ]
+        ]);
+    }
+
+    public function scopeCreatedAfter($query, $date)
+    {
+        return $query->where('created_at', '>', $date);
+    }
+
+    public function scopeWithEquipmentType($query, $equipmentType)
+    {
+        return $query->where('equipment.type', $equipmentType);
     }
 
     public function scopeSeriouslyInjured($query)
@@ -63,6 +113,15 @@ class Duck extends Model
         );
     }
 
+    public function health(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => $value,
+            // Ensure health is never more than MAX_HEALTH or less than 0
+            set: fn (int $value) => min(max($value, 0), self::MAX_HEALTH),
+        );
+    }
+
     public function isInjured(): bool
     {
         return $this->health < self::INJURY_THRESHOLD;
@@ -72,5 +131,23 @@ class Duck extends Model
     {
         return $this->health < self::SERIOUS_INJURY_THRESHOLD;
     }
+
+    /**
+     * Take damage and update health
+     * Returns the total damage taken after armor reduction, does not account for min/max health
+     *
+     * @param int $damage
+     * @return int
+     */
+    public function takeDamage(int $damage): int
+    {
+        $damageTaken = max(0, $damage - $this->armor);
+        $this->health -= $damageTaken;
+        $this->save();
+
+        return $damageTaken;
+    }
+
+
 
 }

@@ -2,9 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Actions\Medical\Doctor;
-use App\Jobs\DoctorJob;
-use App\Jobs\MedicJob;
+use App\Jobs\TriageDuck;
 use App\Models\Duck;
 use Illuminate\Console\Command;
 
@@ -22,15 +20,8 @@ class TriageDucks extends Command
         $this->line("There are $count injured ducks.");
 
         Duck::injured()->each(function ($duck) {
-            if (! $duck->isSeriouslyInjured()) {
-                $this->line("Sending {$duck->name} to the Medic.");
-                dispatch(new MedicJob($duck->_id));
-                return;
-            }
-
-            $this->line("Sending {$duck->name} to the Doctor.");
-            dispatch(new DoctorJob($duck->_id));
-
+            $this->line("Triaging {$duck->name}...");
+            TriageDuck::dispatch($duck->_id);
         });
 
         $this->line("All injured ducks have been triaged.");

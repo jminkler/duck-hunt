@@ -1,20 +1,8 @@
 <?php
 
 use App\Query\DuckStatsQuery;
-use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
 use App\Models\Duck;
+use Illuminate\Support\Facades\Route;
 use MongoDB\Client as MongoClient;
 use MongoDB\BSON\ObjectId;
 
@@ -37,6 +25,31 @@ Route::get('/stats', function (DuckStatsQuery $duckQuery) {
     return response()->json($duckQuery->stats());
 });
 
+Route::get('/search-ducks', function () {
+    // Only do health filtering by default
+    $health = request('health', 90);
+    $ducks = Duck::withHealthAt((float) $health);
+
+    if (request()->has('speed')) {
+        $ducks->withSpeedAbove((float) request('speed'));
+    }
+
+    if (request()->has('totalSpeed')) {
+        $ducks->withTotalSpeedAbove((float) request('totalSpeed'));
+    }
+
+    if (request()->has('date')) {
+        $ducks->createdAfter(request('date'));
+    }
+
+    if (request()->has('equipment')) {
+        $ducks->withEquipmentType(request('equipment'));
+    }
+
+    $ducks->orderBy('health', 'asc');
+
+    return response()->json($ducks->paginate(request('perPage', 100)));
+});
 /**
  * Check if the equipment is used by any duck
  *

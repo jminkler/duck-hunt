@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 class DuckStatsQuery
 {
     public const STATS_CACHE_KEY = 'duck_stats';
-    public const STATS_CACHE_TTL = 60;
+    public const STATS_CACHE_TTL = 5;
 
     public function stats(): array
     {
