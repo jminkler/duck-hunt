@@ -18,10 +18,6 @@ class Duck extends Model
     protected $connection = 'mongodb';
     protected $collection = 'ducks';
     protected $fillable = ['name', 'speed', 'armor', 'evasiveness', 'health', 'equipment', 'injured', 'seriouslyInjured'];
-    protected $attributes = [
-        'injured' => false,
-        'seriouslyInjured' => false,
-    ];
 
     protected static function boot()
     {
@@ -65,6 +61,16 @@ class Duck extends Model
                 $value,
             ),
         );
+    }
+
+    public function isInjured(): bool
+    {
+        return $this->health < self::INJURY_THRESHOLD;
+    }
+
+    public function isSeriouslyInjured(): bool
+    {
+        return $this->health < self::SERIOUS_INJURY_THRESHOLD;
     }
 
 }

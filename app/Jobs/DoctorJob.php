@@ -2,25 +2,24 @@
 
 namespace App\Jobs;
 
-use App\Actions\Medical\Medic;
+use App\Actions\Medical\Doctor;
 use App\Models\Duck;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class MedicJob implements ShouldQueue
+class DoctorJob implements ShouldQueue
 {
-    private const HEALS_FOR = 20;
-
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(private readonly string $duckId)
     {
     }
 
-    public function handle(Medic $medic): void
+    public function handle(Doctor $doctor): void
     {
         try {
             $duck = Duck::findOrFail($this->duckId);
@@ -28,8 +27,9 @@ class MedicJob implements ShouldQueue
                 return;
             }
 
-            $medic->heal($duck);
-            Log::info('Duck healed by medic', ['duck_id' => $duck->id]);
+            $doctor->heal($duck);
+
+            Log::info('Duck healed by Doctor', ['duck_id' => $duck->id]);
 
             if ($duck->isInjured()) {
                 Log::info('Duck still injured', ['duck_id' => $duck->id]);
@@ -37,7 +37,11 @@ class MedicJob implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            return;
+            Log::error('Error healing duck', [
+                'duck_id' => $this->duckId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->fail($e);
         }
     }
 }
