@@ -105,6 +105,7 @@ class DuckTest extends TestCase
                 ['type' => 'speed', 'value' => 5], // not armor
             ],
         ]);
+
         $this->assertEquals(32, $sut->armor);
     }
 }

@@ -33,7 +33,7 @@ class DuckSeeder extends Seeder
                 'speed' => $faker->randomFloat(2, 0.1, 10),
                 'armor' => $faker->randomFloat(2, 0, 10),
                 'evasiveness' => $faker->randomFloat(2, 0, 10),
-                'health' => 100,
+                'health' => $faker->numberBetween(1, 100),
                 'equipment' => $formattedEquipment,
                 'created_at' => $now,
                 'updated_at' => $now,

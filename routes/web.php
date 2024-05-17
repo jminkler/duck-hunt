@@ -1,5 +1,6 @@
 <?php
 
+use App\Query\DuckStatsQuery;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,59 +32,9 @@ Route::get('/ducks', function () {
         $ducks
     );
 });
-Route::get('/stats', function () {
-    $stats = Duck::raw(function ($collection) {
-        return $collection->aggregate([
-            [
-                '$facet' => [
-                    'totalDucks' => [
-                        [
-                            '$count' => 'count'
-                        ]
-                    ],
-                    'injuredDucks' => [
-                        [
-                            '$match' => ['injured' => true]
-                        ],
-                        [
-                            '$count' => 'count'
-                        ]
-                    ],
-                    'averageSpeed' => [
-                        [
-                            '$group' => [
-                                '_id' => null,
-                                'averageSpeed' => ['$avg' => '$speed']
-                            ]
-                        ]
-                    ],
-                    'evasivenessEquipment' => [
-                        [
-                            '$unwind' => '$equipment'
-                        ],
-                        [
-                            '$match' => ['equipment.type' => 'evasiveness']
-                        ],
-                        [
-                            '$count' => 'count'
-                        ]
-                    ]
-                ]
-            ]
-        ]);
-    })->toArray();
 
-    $totalDucks = $stats[0]['totalDucks'][0]['count'] ?? 0;
-    $injuredDucks = $stats[0]['injuredDucks'][0]['count'] ?? 0;
-    $averageSpeed = $stats[0]['averageSpeed'][0]['averageSpeed'] ?? 0;
-    $evasivenessEquipment = $stats[0]['evasivenessEquipment'][0]['count'] ?? 0;
-
-    return response()->json([
-        'totalDucks' => $totalDucks,
-        'injuredDucks' => $injuredDucks,
-        'averageSpeed' => $averageSpeed,
-        'evasivenessEquipment' => $evasivenessEquipment,
-    ]);
+Route::get('/stats', function (DuckStatsQuery $duckQuery) {
+    return response()->json($duckQuery->stats());
 });
 
 /**
